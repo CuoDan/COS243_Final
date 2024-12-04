@@ -1,0 +1,69 @@
+---
+title: "Local Librarian using Llamaindex and Gradio"
+author: "Cuong Dang"
+date: "2024-12-04"
+format: html
+---
+
+# 1. Project Overview and Objectives
+
+This project aims to build a local AI-powered librarian application that enables intelligent searching and interaction with personal ebook collections using advanced RAG (Retrieval-Augmented Generation) techniques.
+
+# 2. Methodology
+
+## 2.1 Building Process
+
+### 2.1.1 Setting up Environment
+
+Modify the given code so that it would work
+
+```python
+
+```
+### 2.1.2 Upload/Import Feature
+
+Prompts:
+
+1. Write a python function that enables the user to upload and import ebooks
+2. Modify the code you gave me so that the function can take in a filepath as a parameter
+3. Now, modify the code so that the ebook is imported into the the directory data /data
+4. Modify the code so that it can support .pdf files as well
+
+`test.ipynb`
+
+### 2.1.3 Search with Citation Feature
+
+Prompts:
+
+1. Modify the vector_tool and summary_tool so that it will include citation (cites the page number or section from the book) in the response.
+
+`test.ipynb`
+
+### 2.1.4 Conversation History Feature
+
+### 2.1.5 Gradio Web Interface
+
+
+## 2.2 Key Functions and Their Purposes
+
+- `process_user_message`: Process the user inquiries and moderate it for the appropriateness. Once evaluated, then generate a suitable response from the products.json along with helper functions from utils.py. If the evaluated response is appropriate, then return it to the user.
+- `log_messages`: log the timestamp, user's inquiry, AI response, and the metadata for each inquiries.
+- `collect_messages_en`: Create a chain prompt system so that the AI response can have a context from the previous conversations.
+
+
+# 3. Challenges Faced and Solutions Implemented
+
+- **Challenge**: 
+  - **Solution**: 
+
+- **Challenge**: 
+  - **Solution**: 
+
+- **Challenge**: 
+  - **Solution**: 
+
+# 4. Potential Improvements and Future Work
+
+- 
+- 
+- 
