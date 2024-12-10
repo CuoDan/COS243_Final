@@ -36,9 +36,38 @@ Prompts:
 Prompts:
 
 1. Modify the vector_tool and summary_tool so that it will include citation (cites the page number or section from the book) in the response.
-
 `test.ipynb`
 
+2. 
+```
+Some books may not have page numbers and also wouldn't explicitly state the section for example:
+
+<example-start> 1.
+causes in the air
+
+Sometime during the 1740s, the Reverend Thomas Bayes made the ingenious discovery that bears his name but then mysteriously abandoned it. It was rediscovered independently by a different and far more renowned man, Pierre Simon Laplace, ........ .....
+
+the man who did everything
+
+Just across the English Channel from Tunbridge Wells, about the time that Thomas Bayes was imagining his perfectly smooth table, the mayor of a tiny village in Normandy was celebrating the birth of a son, Pierre Simon Laplace, the future Einstein of his age. ..... <example-end>
+
+This example only shows the number for the section and the name of the section in the beginning of each sections.
+
+Modify the include_citations function and the class CitationQueryEngineTool so that the response will include citations of the section number and section name when information from those sections were referenced.
+```
+`text_book` and `test.ipynb`
+
+3. 
+```
+Add a function that can include citation and sources in the response after the query. Build the function based on the python code below and integrate it with the query_engine:
+
+<code-start> def GetSources(response): for node in response.source_nodes: # Access the TextNode object directly text_node = node.node
+GetSources(response) <code-end>
+
+<sample-response-from-code> Source: The Theory That Would Not Die ... Page: 278 Source: The Theory That Would Not Die ... Page: 25 Source: The Theory That Would Not Die ... Page: 176 Source: The Theory That Would Not Die ... Page: 177 Source: The Theory That Would Not Die ... Page: 24 <sample-end>
+```
+
+4. Integrate the GetSources as an agent tool for the query_engine so that in the response, from the query, citations/sources from the GetSources function is included.
 ### 2.1.4 Conversation History Feature
 
 ### 2.1.5 Gradio Web Interface

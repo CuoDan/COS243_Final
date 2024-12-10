@@ -5,10 +5,13 @@
 import os
 import gradio as gr
 from llama_index.core import SimpleDirectoryReader, VectorStoreIndex, Settings
+from llama_index.core.query_engine import RouterQueryEngine
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from llama_index.core.tools import QueryEngineTool, ToolMetadata
 from llama_index.llms.ollama import Ollama
-from llama_parse import LlamaParse
-import json
+from llama_index.core.memory import ChatMemoryBuffer
+from llama_index.core.chat_engine import CondensePlusContextChatEngine
+from dotenv import load_dotenv 
 
 ####################
 ## For ebooks upload
@@ -20,8 +23,9 @@ from tkinter import filedialog
 from ebooklib import epub
 import fitz  # PyMuPDF
 
+load_dotenv()
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+# OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 LLAMACLOUD_API_KEY = os.getenv("LLAMACLOUD_API_KEY")
 
 llm = Ollama(model="phi3.5:3.8b-mini-instruct-q8_0", api_key="OLLAMA_API_KEY")
@@ -92,3 +96,74 @@ else:
 
 index = VectorStoreIndex.from_documents(docs)
 query_engine = index.as_query_engine(similarity_top_k=5)
+
+# Custom function to include citations in the response
+def include_citations(response, docs):
+    citations = []
+    for doc in docs:
+        if hasattr(doc, 'page_number'):
+            citations.append(f"Page {doc.page_number}")
+        elif hasattr(doc, 'section'):
+            citations.append(f"Section {doc.section}")
+    if citations:
+        return f"{response}\n\nCitations: {', '.join(citations)}"
+    else:
+        return response
+
+# Custom query engine tool with citation inclusion
+class CitationQueryEngineTool(QueryEngineTool):
+    def query(self, query):
+        response, docs = super().query(query)
+        return include_citations(response, docs)
+    
+# vector_tool = QueryEngineTool(
+#     index.as_query_engine(),
+#     metadata=ToolMetadata(
+#         name="vector_search",
+#         description="Useful for searching for specific facts.",
+#     ),
+# )
+
+# Create tools with citation support
+vector_tool = CitationQueryEngineTool(
+    index.as_query_engine(),
+    metadata=ToolMetadata(
+        name="vector_search",
+        description="Useful for searching for specific facts with citations.",
+    ),
+)
+
+# summary_tool = QueryEngineTool(
+#     index.as_query_engine(response_mode="tree_summarize"),
+#     metadata=ToolMetadata(
+#         name="summary",
+#         description="Useful for summarizing an entire document.",
+#     ),
+# )
+
+summary_tool = CitationQueryEngineTool(
+    index.as_query_engine(response_mode="tree_summarize"),
+    metadata=ToolMetadata(
+        name="summary",
+        description="Useful for summarizing an entire document with citations.",
+    ),
+)
+
+query_engine = RouterQueryEngine.from_defaults(
+    [vector_tool, summary_tool], select_multi=False, verbose=True, llm=llm
+)
+
+memory = ChatMemoryBuffer.from_defaults(token_limit=3900)
+
+chat_engine = CondensePlusContextChatEngine.from_defaults(
+    index.as_retriever(),
+    memory=memory,
+    llm=llm,
+    context_prompt=(
+        "You are a chatbot, able to have normal interactions, as well as talk"
+        "Here are the relevant documents for the context:\n"
+        "{context_str}"
+        "\nInstruction: Use the previous chat history, or the context above, to interact and help the user."
+    ),
+    verbose=True,
+)
